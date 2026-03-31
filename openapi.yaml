@@ -1,0 +1,377 @@
+openapi: 3.0.0
+
+info:
+  title: Route Planning API
+  version: 0.0.0
+  description: API for planning routes between two points with customizable stops along the way
+
+paths:
+  /api/v1/route/plan:
+    post:
+      summary: Plan a new route with stops
+      description: Calculate the shortest path between two points and find relevant stops along the way
+      operationId: planRoute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutePlanRequest'
+      responses:
+        '200':
+          description: Successfull
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutePlanResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: External service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Plan a route based on an existing one
+      description: TODO
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteModifyRequest'
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutePlanResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: External service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/stops/types:
+    get:
+      summary: Get available stop types
+      description: Returns a list of all supported stop types
+      operationId: getStopTypes
+      responses:
+        '200':
+          description: 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stopTypes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StopType'
+              example:
+                stopTypes:
+                  - restaurant
+                  - gas_station
+                  - hotel
+
+components:
+  schemas:
+    RoutePlanRequest:
+      type: object
+      required:
+        - origin
+        - destination
+        - stops
+        - routeOptions
+      properties:
+        origin:
+          $ref: '#/components/schemas/Location'
+        destination:
+          $ref: '#/components/schemas/Location'
+        stops_config:
+          $ref: '#/components/schemas/StopsConfig'
+        routeOptions:
+          $ref: '#/components/schemas/RouteOptions'
+
+    RoutePlanResponse:
+      type: object
+      required:
+        - route
+        - suggestedStops
+      properties:
+        route:
+          $ref: '#/components/schemas/Route'
+        suggestedStops:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stop'
+
+    RouteModifyRequest:
+      type: object
+      required:
+        - route
+        - stops
+        - stops_config
+      properties:
+        route:
+          $ref: '#/components/schemas/Route'
+        stops:
+          type: array
+          items:
+            $ref: '#components/schemas/StopIdent'
+        stops_config:
+          $ref: '#/components/schemas/StopsConfig'
+
+    # FIXME: dunno if thats how osm returns it
+    RouteLeg:
+      type: object
+      properties:
+        startLocation:
+          $ref: '#/components/schemas/Location'
+        endLocation:
+          $ref: '#/components/schemas/Location'
+        distance:
+          type: integer
+          description: Distance in meters
+          example: 4500000
+        duration:
+          type: integer
+          description: Duration in seconds
+          example: 14400
+    Route:
+      type: object
+      properties:
+        distance:
+          type: integer
+          description: Total distance in meters
+          example: 4500000
+        duration:
+          type: integer
+          description: Total duration in seconds
+          example: 14400
+        polyline:
+          type: string
+          description: Encoded polyline string representing the route path
+          example: "encoded_polyline_string"
+        legs:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteLeg'
+
+    RouteOptions:
+      type: object
+      required:
+        - vehicle
+      properties:
+        vehicle:
+          type: string
+          enum:
+            - car
+            - truck
+            - motorcycle
+          default: car
+          description: Type of vehicle
+        avoidTolls:
+          type: boolean
+          default: false
+          description: Whether to avoid toll roads
+        avoidHighways:
+          type: boolean
+          default: false
+          description: Whether to avoid highways
+        # TODO: etc...
+
+    StopType:
+      type: string
+      enum:
+        - restaurant
+        - gas_station
+        - hotel
+        - rest_area
+        - charging_station
+        - attraction
+        - parking
+        - hospital
+        # TODO: etc...
+      description: Type of stop/point of interest
+
+    StopIdent:
+      type: object
+      required:
+        - id
+        - type
+        - name
+        - location
+        - address
+      properties:
+        id:
+          type: string
+          description: Unique Identifier
+        type:
+          $ref: '#/components/schemas/StopType'
+        name:
+          type: string
+          description: The establishment's name
+        location:
+          $ref: '#/components/schemas/Location'
+        address:
+          type: string
+          description: The establishment's addess
+
+    Stop:
+      type: object
+      required:
+        - ident
+        - detourDistance
+        - detourTime
+      properties:
+        ident:
+          $ref: '#/components/schemas/StopIdent'
+        detourDistance:
+          type: integer
+          description: Number of meters the stop adds to the trip 
+        detourTime:
+          type: integer
+          description: Number of seconds the stop adds to the trip 
+        website:
+          type: string
+          description: The establishment's website
+        openingHours:
+          $ref: '#/components/schemas/OpeningTimes'
+        rating:
+          $ref: '#/components/schemas/Rating'
+
+    StopOptions:
+      type: object
+      required:
+        - type
+        - maxDetour
+        - limit
+      properties:
+        type: 
+          $ref: '#/components/schemas/StopType'
+        maxDetour:
+          type: integer
+          minimum: 0
+          description: Maximum detour distance in meters from the main route
+        limit:
+          type: integer
+          minimum: 1
+          description: Maximum number of stops to show.
+        frequency:
+          type: integer
+          minimum: 1
+          description: 
+            How many minutes of the journey should pass between stops
+        sortBy:
+          type: string
+          enum:
+            - rating
+            - distance
+            - price
+            # TODO: etc...
+          default: distance
+          description: How to sort the suggested stops
+
+    StopsConfig:
+      type: object
+      required:
+        - stops
+      properties:
+        stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/StopOptions'
+          description: Options for each requested stop type
+    
+    OpeningHours:
+      type: object
+      required:
+        - opens
+        - closes
+      properties:
+        opens:
+          type: string
+          description: Opening time in H-Hour Format (24h)
+          example: "0600"
+        closes:
+          type: string
+          description: Closing time in H-Hour Format (24h)
+          example: "1830"
+
+    OpeningTimes:
+      type: object
+      properties:
+        monday:
+          $ref: '#/components/schemas/OpeningHours'
+        tuesday:
+          $ref: '#/components/schemas/OpeningHours'
+        wednesday:
+          $ref: '#/components/schemas/OpeningHours'
+        thursday:
+          $ref: '#/components/schemas/OpeningHours'
+        friday:
+          $ref: '#/components/schemas/OpeningHours'
+        saturday:
+          $ref: '#/components/schemas/OpeningHours'
+        sunday:
+          $ref: '#/components/schemas/OpeningHours'
+
+    Rating:
+      type: integer
+      minimum: 0
+      maximum: 5
+      description: The establishment's rating (0-5)
+
+    Location:
+      type: object
+      required:
+        - lat
+        - lng
+      properties:
+        lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          description: Latitude
+          example: 40.7128
+        lng:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          description: Longitude
+          example: -74.0060
+
+    Error:
+      type: object
+      required:
+        - type
+        - message
+      properties:
+        type:
+          type: string
+          description: Error Kind
+          example: "INVALID_COORDINATES"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "The provided coordinates are invalid"
+        details:
+          type: object
+          description: Additional error details
