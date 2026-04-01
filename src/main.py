@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 import httpx
+import uvicorn
 
 app = FastAPI()
 
