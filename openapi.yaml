@@ -38,7 +38,7 @@ paths:
                 $ref: '#/components/schemas/Error'
     put:
       summary: Plan a route based on an existing one
-      description: TODO
+      description: Calculate a new route passing through stops (if needed), return stops according to stop_options.
       requestBody:
         required: true
         content:
@@ -256,11 +256,11 @@ components:
           type: integer
           minimum: 1
           description: Maximum number of stops to show.
-        frequency:
+        atJourneyMinute:
           type: integer
           minimum: 1
           description: 
-            How many minutes of the journey should pass between stops
+            How many minutes of the journey should pass before this stop
         sortBy:
           type: string
           enum:
