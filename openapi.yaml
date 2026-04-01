@@ -19,7 +19,7 @@ paths:
               $ref: '#/components/schemas/RoutePlanRequest'
       responses:
         '200':
-          description: Successfull
+          description: Successful
           content:
             application/json:
               schema:
@@ -72,7 +72,7 @@ paths:
       operationId: getStopTypes
       responses:
         '200':
-          description: 
+          description: Successful
           content:
             application/json:
               schema:
@@ -136,24 +136,12 @@ components:
         stops_config:
           $ref: '#/components/schemas/StopsConfig'
 
-    # FIXME: dunno if thats how osm returns it
-    RouteLeg:
-      type: object
-      properties:
-        startLocation:
-          $ref: '#/components/schemas/Location'
-        endLocation:
-          $ref: '#/components/schemas/Location'
-        distance:
-          type: integer
-          description: Distance in meters
-          example: 4500000
-        duration:
-          type: integer
-          description: Duration in seconds
-          example: 14400
     Route:
       type: object
+      required:
+        - distance
+        - duration
+        - points
       properties:
         distance:
           type: integer
@@ -163,14 +151,10 @@ components:
           type: integer
           description: Total duration in seconds
           example: 14400
-        polyline:
-          type: string
-          description: Encoded polyline string representing the route path
-          example: "encoded_polyline_string"
-        legs:
+        points:
           type: array
           items:
-            $ref: '#/components/schemas/RouteLeg'
+            $ref: '#/components/schemas/Location'
 
     RouteOptions:
       type: object
