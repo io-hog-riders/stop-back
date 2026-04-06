@@ -1,0 +1,14 @@
+from fastapi import APIRouter
+
+from db.models.plan import RoutePlanResponse
+from services.plan.service import plan_route_mock, modify_route_mock
+
+router = APIRouter(prefix="/api/mock/route", tags=["Plan"])
+
+@router.post("/plan", response_model=RoutePlanResponse)
+async def plan_route_endpoint(request: dict) -> RoutePlanResponse:
+    return plan_route_mock()
+
+@router.put("/plan", response_model=RoutePlanResponse)
+async def modify_route_endpoint(request: dict) -> RoutePlanResponse:
+    return modify_route_mock()

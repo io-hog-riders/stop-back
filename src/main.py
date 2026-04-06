@@ -6,6 +6,11 @@ app = FastAPI()
 
 OSRM_URL = "https://router.project-osrm.org"
 
+from src.routes.plan.router_mock import router as plan_router_mock
+from src.routes.stops.router_mock import router as stops_router_mock
+
+app.include_router(plan_router_mock)
+app.include_router(stops_router_mock)
 
 def accuracy(steps, points):
     # konfiguracja dokladnosci, parametr steps = ile pnkt chcemy max,
