@@ -1,8 +1,20 @@
-from fastapi import FastAPI, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
 import httpx
 import uvicorn
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+from src.db.connection import get_db, init_db, ping_db
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+    # potem rzeczy do wyczyszczenia można tu dodać
+
+
+app = FastAPI(lifespan=lifespan)
 
 OSRM_URL = "https://router.project-osrm.org"
 
@@ -67,3 +79,13 @@ async def get_route(
     }
 
     return geojson
+
+
+@app.get("/health/db")
+def db_health_check(db=Depends(get_db)):
+    try:
+        ping_db(db)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="database unavailable") from exc
+
+    return {"status": "ok"}
