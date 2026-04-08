@@ -35,3 +35,47 @@ zmienić to piszcie.
 
 ## przydatne linki:
     - https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.routing.add_edge_travel_times
+
+## baza danych: PostgreSQL + SQLAlchemy
+
+Model bazy jest zaimplementowany na podstawie `src/db/models/database.dbml`.
+
+### 1) konfiguracja
+
+Ustaw zmienna srodowiskowa `DATABASE_URL`, np.:
+
+```bash
+postgresql+psycopg://postgres:postgres@localhost:5432/stop
+```
+
+Jesli nie ustawisz, aplikacja sprobuje polaczyc sie z domyslnym adresem powyzej.
+
+### 1a) uruchomienie PostgreSQL przez Docker
+
+Najprostszy wariant to odpalic sam serwer bazy w kontenerze:
+
+```bash
+docker compose up -d postgres
+```
+
+To stworzy kontener z PostgreSQL 16, baze `stop`, uzytkownika `postgres` i zapis danych w wolumenie `postgres_data`.
+
+### 2) jak to dziala
+
+- Modele ORM: `src/db/models/entities.py`
+- Polaczenie i sesja: `src/db/connection.py`
+- Proste operacje na bazie: `src/db/repositories.py`
+
+Przy starcie FastAPI (`src/main.py`) wywolywane jest `init_db()`, ktore tworzy tabele, jesli jeszcze nie istnieja.
+
+### 3) uruchomienie
+
+```bash
+docker compose up -d postgres
+uv sync
+uv run uvicorn src.main:app --reload
+```
+
+### 4) szybki test
+
+- Endpoint `GET /health/db` robi `SELECT 1` i potwierdza polaczenie z PostgreSQL.
