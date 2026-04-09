@@ -1,11 +1,10 @@
 from fastapi import APIRouter
 
-import services.stops.service as service
+import services.stops.mock as mock 
 from db.models.stops import StopType
 
 router = APIRouter(tags=["Stops"])
 
-@router.get("/types", response_model=StopType)
+@router.get("/types", response_model=list[StopType])
 async def get_stop_types():
-    # TODO:
-    raise NotImplementedError()
+    return mock.get_stop_types()
