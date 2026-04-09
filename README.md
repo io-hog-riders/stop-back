@@ -4,6 +4,18 @@
 
 Róbcie na branchu i dawajcie Pull Requesty
 starajmy się nie pushować na maina (xd)
+Jak nazywacie brancha to mozecie dawać numer taska
+ze Scruma
+
+## jak odpalić lokalnie
+```bash
+cd src
+uvicorn main:app
+```
+albo
+```bash
+fastapi src/main.py
+```
 
 ## struktura projektu (wip)
 
@@ -15,13 +27,15 @@ src/
         connection.py       # połączenie z bazą, inicjalizacja
     routes/                 # RESTowy middleware
         plan/
-            controller.py   # middleware dot. planowania trasy
+            router.py       # router i middleware dot. planowania trasy
         stops/
     services/               # logika biznesowa, ogólna funkcjonalność
         plan/               # obliczanie ścieżki
+            service.py
         stops/              # szukanie przystanków
+            service.py
     app.py                  # inicjalizacja fastapi
-    main.py                 # entry point aplikacji
+    main.py                 # entry point aplikacji (odpalanie wszystkiego w dobrej kolejności)
 ```
 Nie bójcie się zmieniać rzeczy, ale trzymajmy się w miarę
 tej struktury.
