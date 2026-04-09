@@ -1,11 +1,30 @@
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 import httpx
 import uvicorn
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173",
+    # "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 OSRM_URL = "https://router.project-osrm.org"
 
+from routes.plan.router_mock import router as plan_router_mock
+from routes.stops.router_mock import router as stops_router_mock
+
+app.include_router(plan_router_mock)
+app.include_router(stops_router_mock)
 
 def accuracy(steps, points):
     # konfiguracja dokladnosci, parametr steps = ile pnkt chcemy max,
