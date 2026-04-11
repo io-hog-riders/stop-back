@@ -17,6 +17,12 @@ albo
 fastapi src/main.py
 ```
 
+## Jak odpalić serwer przez dockera
+```
+docker build -t 'stop-server'
+docker run -p 3000:3000 'stop-server'
+```
+
 ## struktura projektu (wip)
 
 ```bash
