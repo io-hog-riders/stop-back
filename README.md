@@ -41,6 +41,7 @@ src/
         stops/              # szukanie przystanków
             service.py
     app.py                  # inicjalizacja fastapi
+    env.py                  # importowanie zmiennych środowiskowych
     main.py                 # entry point aplikacji (odpalanie wszystkiego w dobrej kolejności)
 ```
 Nie bójcie się zmieniać rzeczy, ale trzymajmy się w miarę
