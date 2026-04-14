@@ -7,7 +7,7 @@ from routes.plan.mock_router import router as plan_mock_router
 from routes.stops.mock_router import router as stops_mock_router
 
 from contextlib import asynccontextmanager
-from src.db.connection import init_db
+from db.connection import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
