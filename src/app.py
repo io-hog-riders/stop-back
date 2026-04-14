@@ -6,7 +6,16 @@ from routes.stops.router import router as stops_router
 from routes.plan.mock_router import router as plan_mock_router
 from routes.stops.mock_router import router as stops_mock_router
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+from src.db.connection import init_db
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+    # potem rzeczy do wyczyszczenia można tu dodać
+
+app = FastAPI(lifespan=lifespan)
 
 origins = [
     "http://localhost:5173",
