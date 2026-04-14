@@ -14,10 +14,6 @@ RUN sh /uv-installer.sh && rm /uv-installer.sh
 
 ENV PATH="/root/.local/bin/:$PATH"
 
-# Setup a non-root user
-RUN groupadd --system --gid 999 nonroot \
- && useradd --system --gid 999 --uid 999 --create-home nonroot
-
 # Build
 WORKDIR /app
 
@@ -25,11 +21,12 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_NO_DEV=1
 
+# FIXME: docker doesn't seem to support relabel=shared
+# use podman or remove this option
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock,relabel=shared \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml,relabel=shared \
     uv sync --locked --no-install-project
-
 
 COPY . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -40,8 +37,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENTRYPOINT []
 
 # Run
-USER nonroot
-
 EXPOSE ${PORT}/tcp
 
 ENV PORT=${PORT}
