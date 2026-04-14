@@ -89,3 +89,4 @@ def db_health_check(db=Depends(get_db)):
         raise HTTPException(status_code=503, detail="database unavailable") from exc
 
     return {"status": "ok"}
+from app import app

@@ -155,6 +155,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Location'
+        point_durations:
+          type: array
+          nullable: true
+          description:
+            Parallel array to `points` - duration in seconds from the start
+            of the route to each point. Length equals `points` length.
+          items:
+            type: integer
 
     RouteOptions:
       type: object
