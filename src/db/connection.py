@@ -1,17 +1,10 @@
-import os
 from collections.abc import Generator
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from db.models import Base
-
-
-DATABASE_URL = os.getenv(
-	"DATABASE_URL",
-	"postgresql+psycopg://postgres:postgres@localhost:5432/stop",
-)
-
+from env import DATABASE_URL
 
 engine = create_engine(
 	DATABASE_URL,
