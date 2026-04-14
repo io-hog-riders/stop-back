@@ -1,3 +1,3 @@
-from src.db.connection import get_db, init_db
+from db.connection import get_db, init_db
 
 __all__ = ["init_db", "get_db"]

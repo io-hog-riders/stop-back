@@ -4,7 +4,7 @@ from collections.abc import Generator
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from src.db.models import Base
+from db.models import Base
 
 
 DATABASE_URL = os.getenv(

@@ -7,7 +7,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.db.models import Place, Route, RouteStop, User
+from db.models import Place, Route, RouteStop, User
 
 
 @dataclass
