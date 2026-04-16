@@ -36,28 +36,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    put:
-      summary: Plan a route based on an existing one
-      description: Calculate a new route passing through stops (if needed), return stops according to stop_options.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RouteModifyRequest'
+    # put:
+    #   summary: Plan a route based on an existing one
+    #   description: Calculate a new route passing through stops (if needed), return stops according to stop_options.
+    #   requestBody:
+    #     required: true
+    #     content:
+    #       application/json:
+    #         schema:
+    #           $ref: '#/components/schemas/RouteModifyRequest'
+    #   responses:
+    #     '200':
+    #       description: Successful
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/RoutePlanResponse'
+    #     '400':
+    #       description: Invalid request parameters
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #     '503':
+    #       description: External service unavailable
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+
+  /api/v1/route/location:
+    get:
+      summary: Get locations matching the pattern
+      description: Returns a list of names and locations matching the pattern
+      operationId: getLocation
+      parameters:
+        - in: query
+          name: pattern
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoutePlanResponse'
-        '400':
-          description: Invalid request parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    location:
+                      $ref: '#/components/schemas/Location'
         '503':
           description: External service unavailable
           content:
@@ -93,15 +125,15 @@ components:
     RoutePlanRequest:
       type: object
       required:
-        - origin
-        - destination
+        - waypoints
         - stops
         - routeOptions
       properties:
-        origin:
-          $ref: '#/components/schemas/Location'
-        destination:
-          $ref: '#/components/schemas/Location'
+        waypoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+          minItems: 2
         stops_config:
           $ref: '#/components/schemas/StopsConfig'
         routeOptions:
