@@ -2,7 +2,8 @@ import httpx
 from fastapi import APIRouter, HTTPException, Query, status
 
 import services.plan.service as plan_service
-from db.models.plan import NameSearchResult, RoutePlanRequest, RoutePlanResponse
+import services.saving_routes.service as saving_routes_service
+from db.models.plan import NameSearchResult, RoutePlanRequest, RoutePlanResponse, RouteSaveRequest, RouteSaveResponse
 import services.stops.service as stop_service
 
 router = APIRouter(tags=["Plan"])
@@ -17,7 +18,6 @@ async def create_route_plan(request: RoutePlanRequest, steps: int = 1000) -> Rou
         suggested_stops = []
     return RoutePlanResponse(route=route, suggestedStops=suggested_stops)
 
-
 @router.get("/search", response_model=list[NameSearchResult])
 async def name_search(
     name_search: str = Query(min_length=2, max_length=200),
@@ -27,7 +27,7 @@ async def name_search(
     radius_km: float = Query(default=25.0, gt=0, le=300),
 ) -> list[NameSearchResult]:
     try:
-        return await service.search_name_coordinates(
+        return await plan_service.search_name_coordinates(
             name_search=name_search,
             limit=limit,
             center_lat=center_lat,
@@ -44,3 +44,12 @@ async def name_search(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Name search service is unavailable",
         ) from exc
+    
+
+@router.post("/plan/save", response_model=RouteSaveResponse)
+async def save_route(request: RouteSaveRequest) -> RouteSaveResponse:
+    saved_at = saving_routes_service.save_route_to_json(request.route)
+    return RouteSaveResponse(
+        message="Route saved successfully",
+        saved_at=saved_at,
+    )
