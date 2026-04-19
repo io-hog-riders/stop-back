@@ -1,10 +1,20 @@
 import httpx
+<<<<<<< HEAD
 import math
+=======
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+>>>>>>> 03600b0 (Saving paths to a json file)
 from db.models.common import Location
 from db.models.plan import NameSearchResult, Route
 
 OSRM_URL = "https://router.project-osrm.org"
+<<<<<<< HEAD
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+=======
+SAVED_ROUTES_FILE = Path(__file__).resolve().parents[3] / "data" / "saved_routes.json"
+>>>>>>> 03600b0 (Saving paths to a json file)
 
 async def calculate_route(waypoints: list[Location],steps: int = 1000,) -> Route:
     # OSRM chce format /route/v1/driving/lng,lat;lng,lat ,
@@ -122,7 +132,6 @@ async def search_name_coordinates(
 
     return results
 
-
 def _build_viewbox(center_lat: float, center_lng: float, radius_km: float) -> str:
     lat_delta = radius_km / 111.0
     cos_lat = max(math.cos(math.radians(center_lat)), 0.01)
@@ -135,3 +144,30 @@ def _build_viewbox(center_lat: float, center_lng: float, radius_km: float) -> st
 
     # Nominatim viewbox format: left,top,right,bottom => west,north,east,south
     return f"{west},{north},{east},{south}"
+
+
+def save_route_to_json(route: Route) -> str:
+    SAVED_ROUTES_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    saved_routes: list[dict] = []
+    if SAVED_ROUTES_FILE.exists():
+        try:
+            with SAVED_ROUTES_FILE.open("r", encoding="utf-8") as file:
+                loaded = json.load(file)
+            if isinstance(loaded, list):
+                saved_routes = loaded
+        except (OSError, json.JSONDecodeError):
+            saved_routes = []
+
+    saved_at = datetime.now(timezone.utc).isoformat()
+    saved_routes.append(
+        {
+            "saved_at": saved_at,
+            "route": route.model_dump(),
+        }
+    )
+
+    with SAVED_ROUTES_FILE.open("w", encoding="utf-8") as file:
+        json.dump(saved_routes, file, indent=2, ensure_ascii=True)
+
+    return saved_at

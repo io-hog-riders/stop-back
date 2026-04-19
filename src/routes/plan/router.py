@@ -2,7 +2,8 @@ import httpx
 from fastapi import APIRouter, HTTPException, Query, status
 
 import services.plan.service as service
-from db.models.plan import NameSearchResult, RoutePlanRequest, RoutePlanResponse
+from db.models.plan import NameSearchResult, RoutePlanRequest, RoutePlanResponse, RouteSaveRequest, RouteSaveResponse
+
 
 router = APIRouter(tags=["Plan"])
 
@@ -20,7 +21,6 @@ async def create_route_plan(request: RoutePlanRequest, steps: int = 1000) -> Rou
 async def update_route_plan(request: dict) -> RoutePlanResponse:
     #TODO
     raise NotImplementedError()
-
 
 @router.get("/search", response_model=list[NameSearchResult])
 async def name_search(
@@ -48,3 +48,12 @@ async def name_search(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Name search service is unavailable",
         ) from exc
+    
+
+@router.post("/plan/save", response_model=RouteSaveResponse)
+async def save_route(request: RouteSaveRequest) -> RouteSaveResponse:
+    saved_at = service.save_route_to_json(request.route)
+    return RouteSaveResponse(
+        message="Route saved successfully",
+        saved_at=saved_at,
+    )

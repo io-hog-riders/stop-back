@@ -36,6 +36,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /api/v1/route/plan/save:
+    post:
+      summary: Save route to JSON
+      description: Saves provided route payload to local JSON file storage.
+      operationId: saveRouteToJson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteSaveRequest'
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteSaveResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     # put:
     #   summary: Plan a route based on an existing one
     #   description: Calculate a new route passing through stops (if needed), return stops according to stop_options.
@@ -223,6 +248,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Stop'
+
+    RouteSaveRequest:
+      type: object
+      required:
+        - route
+      properties:
+        route:
+          $ref: '#/components/schemas/Route'
+
+    RouteSaveResponse:
+      type: object
+      required:
+        - message
+        - saved_at
+      properties:
+        message:
+          type: string
+          example: Route saved successfully
+        saved_at:
+          type: string
+          format: date-time
 
     RouteModifyRequest:
       type: object
