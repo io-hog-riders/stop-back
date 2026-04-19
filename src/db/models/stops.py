@@ -31,3 +31,22 @@ class Stop(BaseModel):
     website: Optional[str] = None
     openingHours: Optional[OpeningTimes] = None
     rating: Optional[Rating] = None
+
+
+class SortBy(str, Enum):
+    rating = "rating"
+    distance = "distance"
+    price = "price"
+
+class StopOptions(BaseModel):
+    type: StopType
+    maxDetour: int
+    limit: int
+    atJourneyMinute: int
+    targetPercent: int
+    sortBy: SortBy = Field(
+        default=SortBy.distance
+    )
+
+class StopsConfig(BaseModel):
+    stops: list[StopOptions]
