@@ -24,3 +24,8 @@ class RoutePlanRequest(BaseModel):
     destination: Location
     stops_config: Optional[dict] = None # te dwa pola do zmiany bo jeszcze nie uzywane
     routeOptions: Optional[dict] = None
+
+
+class NameSearchResult(BaseModel):
+    name: str
+    location: Location
