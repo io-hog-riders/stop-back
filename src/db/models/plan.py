@@ -20,9 +20,8 @@ class RoutePlanResponse(BaseModel):
 
 
 class RoutePlanRequest(BaseModel):
-    origin: Location
-    destination: Location
-    stops_config: Optional[dict] = None # te dwa pola do zmiany bo jeszcze nie uzywane
+    waypoints: list[Location]
+    stops_config: Optional[dict] = None
     routeOptions: Optional[dict] = None
 
 

@@ -10,16 +10,9 @@ router = APIRouter(tags=["Plan"])
 @router.post("/plan", response_model=RoutePlanResponse)
 async def create_route_plan(request: RoutePlanRequest, steps: int = 1000) -> RoutePlanResponse:
 
-    waypoints = [request.origin, request.destination]
-    route = await service.calculate_route(waypoints, steps)
+    route = await service.calculate_route(request.waypoints, steps)
 
     return RoutePlanResponse(route=route, suggestedStops=[])
-
-
-@router.put("/plan", response_model=RoutePlanResponse)
-async def update_route_plan(request: dict) -> RoutePlanResponse:
-    #TODO
-    raise NotImplementedError()
 
 
 @router.get("/search", response_model=list[NameSearchResult])
