@@ -20,7 +20,11 @@ class RoutePlanResponse(BaseModel):
 
 
 class RoutePlanRequest(BaseModel):
-    origin: Location
-    destination: Location
+    waypoints: list[Location]
     stops_config: StopsConfig
     routeOptions: Optional[dict] = None
+
+
+class NameSearchResult(BaseModel):
+    name: str
+    location: Location
