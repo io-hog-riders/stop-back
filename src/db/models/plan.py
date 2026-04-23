@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from db.models.common import Location
-from db.models.stops import Stop
+from db.models.stops import Stop, StopsConfig
 
 
 class Route(BaseModel):
@@ -21,7 +21,7 @@ class RoutePlanResponse(BaseModel):
 
 class RoutePlanRequest(BaseModel):
     waypoints: list[Location]
-    stops_config: Optional[dict] = None
+    stops_config: StopsConfig
     routeOptions: Optional[dict] = None
 
 

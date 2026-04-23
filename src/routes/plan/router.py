@@ -1,18 +1,21 @@
 import httpx
 from fastapi import APIRouter, HTTPException, Query, status
 
-import services.plan.service as service
+import services.plan.service as plan_service
 from db.models.plan import NameSearchResult, RoutePlanRequest, RoutePlanResponse
+import services.stops.service as stop_service
 
 router = APIRouter(tags=["Plan"])
 
-
 @router.post("/plan", response_model=RoutePlanResponse)
 async def create_route_plan(request: RoutePlanRequest, steps: int = 1000) -> RoutePlanResponse:
-
-    route = await service.calculate_route(request.waypoints, steps)
-
-    return RoutePlanResponse(route=route, suggestedStops=[])
+    waypoints = request.waypoints
+    route = await plan_service.calculate_route(waypoints, steps)
+    try:
+        suggested_stops =  await stop_service.get_stops_along_route(route=route, stops_config=request.stops_config)
+    except (httpx.HTTPStatusError, httpx.RequestError):
+        suggested_stops = []
+    return RoutePlanResponse(route=route, suggestedStops=suggested_stops)
 
 
 @router.get("/search", response_model=list[NameSearchResult])
