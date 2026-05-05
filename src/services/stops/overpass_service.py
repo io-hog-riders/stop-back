@@ -13,8 +13,8 @@ from db.models.stops import (
     StopsConfig,
     StopType,
 )
-from services.stops.utils import estimate_distance_to_point, sort_stops, deduplicate_elements, \
-    find_route_point_at_percent
+from services.stops.utils import sort_stops, deduplicate_elements, \
+    find_route_point_at_percent, estimate_distance_to_route, parse_rating, parse_opening_hours
 
 #Podejscie oparte na szukaniu tylko w obrębie jednego punktu na trasie
 
@@ -87,9 +87,14 @@ async def find_stops_for_option(route: Route, stop_option: StopOptions) -> list[
     elements = deduplicate_elements(data.get("elements", []))
     print("ELEMENTS COUNT:", len(elements))
 
+
     stops: list[Stop] = []
     for element in elements:
-        stop = map_element_to_stop(element, stop_option.type, target_point)
+        coords = extract_coords(element)
+        if coords is None:
+            continue
+        detour_distance = estimate_distance_to_route(stop_option.targetPercent, route.points, coords)
+        stop = map_element_to_stop(element, stop_option.type, detour_distance)
         if stop is None:
             continue
         stops.append(stop)
@@ -167,7 +172,8 @@ out center tags;
 def map_element_to_stop(
     element: dict,
     stop_type: StopType,
-    target_point: Location,
+    detour_distance: int,
+
 ) -> Stop | None:
     coords = extract_coords(element)
     if coords is None:
@@ -177,7 +183,6 @@ def map_element_to_stop(
     tags = element.get("tags", {}) or {}
 
     location = Location(lat=lat, lng=lng)
-    detour_distance = estimate_distance_to_point(location, target_point)
 
     return Stop(
         ident=StopIdent(
@@ -188,10 +193,10 @@ def map_element_to_stop(
             address=build_address(tags),
         ),
         detourDistance=detour_distance,
-        detourTime=int(detour_distance * DETOUR_TIME_MULTIPLIER),
+        detourTime=max(int(detour_distance * DETOUR_TIME_MULTIPLIER),1),
         website=tags.get("website"),
-        openingHours=None,
-        rating=None,
+        openingHours=parse_opening_hours(tags),
+        rating=parse_rating(tags),
     )
 
 
