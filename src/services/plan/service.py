@@ -77,13 +77,13 @@ async def search_name_coordinates(
     limit: int = 5,
     center_lat: float | None = None,
     center_lng: float | None = None,
-    radius_km: float = 25.0
+    radius_km: float  | None = None,
 ) -> list[NameSearchResult]:
     if (center_lat is None) != (center_lng is None):
         raise ValueError("center_lat and center_lng must be provided together")
 
-    if radius_km is not None and center_lat is None:
-        raise ValueError("radius_km requires center_lat and center_lng")
+    if (radius_km is None) != (center_lat is None):
+        raise ValueError("radius_km and coordinates must be provided together")
 
     if radius_km is not None and radius_km <= 0:
         raise ValueError("radius_km must be greater than 0")
@@ -94,7 +94,7 @@ async def search_name_coordinates(
         "limit": limit,
     }
 
-    if center_lat is not None and center_lng is not None:
+    if center_lat is not None and center_lng is not None and radius_km is not None:
         params["viewbox"] = _build_viewbox(center_lat, center_lng, radius_km)
         params["bounded"] = 1
 
