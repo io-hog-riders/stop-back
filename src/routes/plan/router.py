@@ -12,7 +12,7 @@ async def create_route_plan(request: RoutePlanRequest, steps: int = 1000) -> Rou
     waypoints = request.waypoints
     route = await plan_service.calculate_route(waypoints, steps)
     try:
-        suggested_stops =  await stop_service.get_stops_along_route(route=route, stops_config=request.stops_config)
+        suggested_stops =  await stop_service.get_stops_along_route(route=route, stops_config=request.stops_config, person=request.routeOptions.person)
     except (httpx.HTTPStatusError, httpx.RequestError):
         suggested_stops = []
     return RoutePlanResponse(route=route, suggestedStops=suggested_stops)
