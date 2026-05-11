@@ -26,7 +26,7 @@ OVERPASS_URLS = [
     "https://overpass.kumi.systems/api/interpreter",
 ]
 #póki co nasz detour time to sztywno detour_distance/900
-DETOUR_TIME_MULTIPLIER = 1/900
+DETOUR_TIME_MULTIPLIER = 1/8 # <- 1/900 to ok. 3240 kmh XDDDDD
 
 #zamiana na te śmieszne typy OSM
 STOP_TYPE_TO_OSM = {

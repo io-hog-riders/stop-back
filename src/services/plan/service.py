@@ -6,6 +6,9 @@ from db.models.plan import NameSearchResult, Route
 OSRM_URL = "https://router.project-osrm.org"
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 
+# nominatim wymaga user agenta
+NOMINATIM_USER_AGENT = "stopfinder-backend/0.1 (https://github.com/stopfinder)"
+
 async def calculate_route(waypoints: list[Location],steps: int = 1000,) -> Route:
     # OSRM chce format /route/v1/driving/lng,lat;lng,lat ,
     # mozna wiele pkt w jednym requescie, po prostu trzeba je odseparowac ";'
@@ -99,7 +102,8 @@ async def search_name_coordinates(
         params["bounded"] = 1
 
 
-    async with httpx.AsyncClient() as client:
+    headers = {"User-Agent": NOMINATIM_USER_AGENT}
+    async with httpx.AsyncClient(headers=headers) as client:
         response = await client.get(NOMINATIM_URL, params=params)
         response.raise_for_status()
         data = response.json()
