@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -23,3 +24,9 @@ class OpeningTimes(BaseModel):
 
 class Rating(BaseModel):
     rate: Optional[int] = Field(ge=0, le=5)
+
+class Person(str, Enum):
+    family = "family",
+    driver = "driver",
+    disabled = "disabled",
+    students = "students",

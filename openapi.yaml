@@ -273,6 +273,8 @@ components:
       required:
         - vehicle
       properties:
+        person:
+            $ref: '#/components/schemas/Person'
         vehicle:
           type: string
           enum:
@@ -393,7 +395,16 @@ components:
           items:
             $ref: '#/components/schemas/StopOptions'
           description: Options for each requested stop type
-    
+
+    Person:
+      type: string
+      enum:
+        - family
+        - driver
+        - disabled
+        - students
+      description: Type of person used to personalize suggested stops
+      
     OpeningHours:
       type: object
       required:

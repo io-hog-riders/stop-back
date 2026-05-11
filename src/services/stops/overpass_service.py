@@ -13,6 +13,7 @@ from db.models.stops import (
     StopsConfig,
     StopType,
 )
+from db.models.common import Person
 from services.stops.utils import sort_stops, deduplicate_elements, \
     find_route_point_at_percent, estimate_distance_to_route, parse_rating, parse_opening_hours
 
@@ -24,8 +25,8 @@ OVERPASS_URLS = [
     "https://lz4.overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
-#póki co nasz detour time to sztywno detour_distance/300
-DETOUR_TIME_MULTIPLIER = 1/300
+#póki co nasz detour time to sztywno detour_distance/900
+DETOUR_TIME_MULTIPLIER = 1/900
 
 #zamiana na te śmieszne typy OSM
 STOP_TYPE_TO_OSM = {
@@ -39,15 +40,21 @@ STOP_TYPE_TO_OSM = {
     StopType.hospital: ("amenity", "hospital"),
 }
 
+RESTAURANT_PERSONALIZATION = {
+    Person.family: ("kids_area", "yes"),
+    Person.students: ("bar", "yes"),
+    Person.disabled: ("wheelchair", "yes"),
+    Person.driver: ("bar", "no") #zeby ich nie kusilo xd
+}
 
-async def find_stops_along_route(route: Route, stops_config: StopsConfig) -> list[Stop]:
+async def find_stops_along_route(route: Route, stops_config: StopsConfig, person: Person) -> list[Stop]:
     all_stops: list[Stop] = []
 
     #szukamy po kolei dla każdego wybranego rodzaju stopu
     #dzieki temu mniejsze zapytanie + wywalenie jednego nie psuje całości
     for stop_option in stops_config.stops:
         try:
-            stops_for_type = await find_stops_for_option(route, stop_option)
+            stops_for_type = await find_stops_for_option(route, stop_option, person)
         except httpx.HTTPError as exc:
             print("Not found for:", stop_option)
             print("HTTP ERROR TYPE:", type(exc).__name__)
@@ -55,33 +62,36 @@ async def find_stops_along_route(route: Route, stops_config: StopsConfig) -> lis
 
             if isinstance(exc, httpx.HTTPStatusError):
                 print("STATUS CODE:", exc.response.status_code)
-                print("RESPONSE TEXT:", exc.response.text)
             stops_for_type = []
         all_stops.extend(stops_for_type)
 
     return all_stops
 
 #Odpytujemy Overpassa o dane miejsce
-async def find_stops_for_option(route: Route, stop_option: StopOptions) -> list[Stop]:
+async def find_stops_for_option(route: Route, stop_option: StopOptions, person: Person) -> list[Stop]:
     osm_key, osm_value = STOP_TYPE_TO_OSM[stop_option.type]
+    osm_keys = [osm_key]
+    osm_values = [osm_value]
 
+    print("PERSON:", person)
+    if person is not None and stop_option.type == StopType.restaurant:
+        person_key, person_value = RESTAURANT_PERSONALIZATION[person]
+        osm_keys.append(person_key)
+        osm_values.append(person_value)
     #punkt w okół którego bedziemy szukać
     target_point = find_route_point_at_percent(route.points, stop_option.targetPercent)
 
     query = build_overpass_query(
         point=target_point,
-        osm_key=osm_key,
-        osm_value=osm_value,
+        osm_keys=osm_keys,
+        osm_values=osm_values,
         radius_m=stop_option.maxDetour,
     )
 
-    print("TARGET POINT:", target_point)
-    print("RADIUS:", stop_option.maxDetour)
     print("OVERPASS QUERY:")
     print(query)
     async with httpx.AsyncClient(timeout=50.0) as client:
         data = await fetch_with_retry(client, query)
-        print("OVERPASS DATA:", data)
     if not data:
         return []
     elements = deduplicate_elements(data.get("elements", []))
@@ -122,7 +132,6 @@ async def fetch_with_retry(
 
             print("FINAL URL:", response.request.url)
             print("STATUS:", response.status_code)
-            print("TEXT:", response.text[:500])
 
             #Too many request, wyskakuje czasem jak mamy w query wiecej niz jedno miejsce
             #ale podaje tez po jakim czasie sprobowac ponownie
@@ -153,15 +162,21 @@ async def fetch_with_retry(
 #Funkcje pomocnicze, typowe dla overpassa
 def build_overpass_query(
     point: Location,
-    osm_key: str,
-    osm_value: str,
+    osm_keys: list[str],
+    osm_values: list[str],
     radius_m: int,
 ) -> str:
+    pairs = "".join(
+        f'["{key}"="{value}"]'
+        for key, value in zip(osm_keys, osm_values)
+    )
+
+
     return f"""
 [out:json][timeout:50];
 (
-  node["{osm_key}"="{osm_value}"](around:{radius_m},{point.lat},{point.lng});
-  way["{osm_key}"="{osm_value}"](around:{radius_m},{point.lat},{point.lng});
+  node{pairs}(around:{radius_m},{point.lat},{point.lng});
+  way{pairs}(around:{radius_m},{point.lat},{point.lng});
 );
 out center tags;
 """.strip()

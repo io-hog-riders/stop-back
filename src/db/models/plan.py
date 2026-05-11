@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from db.models.common import Location
+from db.models.common import Location, Person
 from db.models.stops import Stop, StopsConfig
 
 
@@ -22,7 +22,10 @@ class RoutePlanResponse(BaseModel):
 class RoutePlanRequest(BaseModel):
     waypoints: list[Location]
     stops_config: StopsConfig
-    routeOptions: Optional[dict] = None
+    routeOptions: Optional[RouteOptions] = None
+
+class RouteOptions(BaseModel):
+    person: Optional[Person] = None
 
 
 class NameSearchResult(BaseModel):
