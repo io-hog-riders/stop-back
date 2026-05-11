@@ -31,3 +31,11 @@ class RouteOptions(BaseModel):
 class NameSearchResult(BaseModel):
     name: str
     location: Location
+
+
+class RouteSaveRequest(BaseModel):
+    route: Route
+
+class RouteSaveResponse(BaseModel):
+    message: str
+    saved_at: str

@@ -122,7 +122,6 @@ async def search_name_coordinates(
 
     return results
 
-
 def _build_viewbox(center_lat: float, center_lng: float, radius_km: float) -> str:
     lat_delta = radius_km / 111.0
     cos_lat = max(math.cos(math.radians(center_lat)), 0.01)
